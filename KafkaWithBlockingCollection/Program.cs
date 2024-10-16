@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IMessageBroker, MessageBroker>();
 builder.Services.AddHostedService<ConsumerBackgroundService>();
+builder.Services.AddHostedService<ConsumeEnumerableBackgroundService>();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -35,5 +36,20 @@ app.MapGet("/produce-message", (IMessageBroker messageBroker) =>
 })
 .WithName("ProduceMessage")
 .WithOpenApi();
+
+app.MapGet("/produce-message-enumerable", (IMessageBroker messageBroker) =>
+    {
+        var message = new MessageModel
+        {
+            Id = Guid.NewGuid(),
+            Name = $"{Constants.Enumerable_TOPIC}__{Guid.NewGuid()}",
+            Description = $"A description for {Constants.TOPIC}"
+        };
+
+        messageBroker.Produce(Constants.Enumerable_TOPIC, message);
+        return message;
+    })
+    .WithName("ProduceMessageEnumerable")
+    .WithOpenApi();
 
 app.Run();

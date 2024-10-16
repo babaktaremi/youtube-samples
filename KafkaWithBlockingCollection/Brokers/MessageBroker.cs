@@ -35,6 +35,17 @@ public class MessageBroker : IMessageBroker
 
         return default;
     }
+    
+    public IEnumerable<T?> ConsumeEnumerable<T>(string topic, CancellationToken cancellationToken) where T : class
+    {
+        if (!_topics.ContainsKey(topic))
+            _topics[topic] = new BlockingCollection<string>();
+
+        foreach (var message in _topics[topic].GetConsumingEnumerable(cancellationToken))
+        {
+            yield return JsonSerializer.Deserialize<T>(message);
+        }
+    }
 
     public void Close(string topic)
     {
